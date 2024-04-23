@@ -3,3 +3,5 @@
 
 # !!! Команда для ДЗ_1 семинаров по углубленному Гит !!!
 `git pull origin main  --allow-unrelated-histories` / либо `git merge`
+
+# Изменения для ДЗ_2
