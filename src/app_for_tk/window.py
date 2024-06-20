@@ -33,6 +33,7 @@ class Window:
     def select_folder(self):
         folder = fd.askdirectory()
         self.place_entry.set(folder)
+        return folder
 
 
 if __name__ == "__main__":
