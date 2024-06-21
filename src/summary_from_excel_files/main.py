@@ -1,3 +1,4 @@
+from fileinput import filename
 import os
 import pandas as pd
 
@@ -9,7 +10,7 @@ from .get_summary_excel import reference_sheet, summary_sheet
 # запись в файл вынести отдельно
 # база данных(SQLite?)
 
-path_files = r'C:\Users\МАСТЕР\Desktop\summary\temp'
+path_files = None
 files = os.listdir(path_files)
 nessesary_sheets = ['Наряд']
 skip_cols = ['Мастер', 'Брак шт.', 'доп. отметка']
@@ -23,7 +24,7 @@ if __name__ == "__main__":
     df_total = df_total[df_total['Прессовщик'] != 0]
     df_total.reset_index(drop=True, inplace=True)
 
-    with pd.ExcelWriter(r'C:\Users\МАСТЕР\Desktop\summary\summary.xlsx') as writer:
+    with pd.ExcelWriter(filename) as writer:
         reference_sheet(df_total, ['Дата', 'Прессовщик']).to_excel(
             writer, sheet_name='справка')
         df_total.to_excel(writer, sheet_name='сводная', index=False)

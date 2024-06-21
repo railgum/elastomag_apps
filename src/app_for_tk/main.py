@@ -2,7 +2,7 @@ from window import Window
 
 
 window = Window(700, 300, "Создание сводной таблицы",
-                icon=r"myapps_excel\src\app_for_tk\resources\tk.ico")
+                icon=None)
 window.label.configure(
     text="Приветствую вас в моем первом .exe-шном приложении!",
     fg="green"
