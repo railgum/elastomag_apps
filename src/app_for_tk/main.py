@@ -4,7 +4,7 @@ from window import Window
 window = Window(700, 300, "Создание сводной таблицы",
                 icon=None)
 window.label.configure(
-    text="Приветствую вас в моем первом .exe-шном приложении!",
+    text="@Автор программы - Раиль Гумеров.\nПриветствую вас в моем первом .exe-шном приложении!",
     fg="green"
 )
 window.button.configure(text="Выберите папку", command=window.select_folder)

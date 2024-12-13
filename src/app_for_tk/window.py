@@ -36,6 +36,6 @@ class Window:
         return folder
 
 
-if __name__ == "__main__":
-    window = Window(500, 500)
-    window.run()
+# if __name__ == "__main__":
+#     window = Window(500, 500)
+#     window.run()
