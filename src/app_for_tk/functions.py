@@ -1,4 +1,6 @@
 import pandas as pd
+import sqlite3
+import os
 
 # Функция создания сводной таблицы из нескольких файлов Excel
 # с одинаковой шапкой
@@ -35,3 +37,13 @@ index = ['Наименование детали']
 values = ['Годных шт.', 'Стоимость вул-ции']
 aggfunc = ['sum']
 column_filter_empty = 'Годных шт.'
+
+
+# функция преобразования Excel-файла в БД Sqlite
+
+def convert_excel_to_db(file_name, db_name):
+    db = sqlite3.connect(db_name)
+
+    dfs = pd.read_excel(file_name, sheet_name=None)
+    for table, df in dfs.items():
+        df.to_sql(table, db, if_exists='replace')
