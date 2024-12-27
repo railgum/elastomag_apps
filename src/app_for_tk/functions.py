@@ -21,6 +21,7 @@ def summary_sheet(files, nessesary_sheets, skip_cols, header_row):
         concat_list.append(df)
     return concat_list
 
+
 # Функция создания справки(внутренний документ компании)
 
 

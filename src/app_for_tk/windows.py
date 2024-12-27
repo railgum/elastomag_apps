@@ -1,6 +1,7 @@
+from functions import *
 from tkinter import *
 from tkinter import filedialog as fd
-
+import pandas as pd
 
 FONT_MAIN_WINDOW = ("Times New Roman", 18)
 
@@ -25,21 +26,37 @@ class Main_Window:
             text="Label",
             font=FONT_MAIN_WINDOW
         )
-        button = Button(self.root, text="Button",
-                        command=self.select_folder)
-        button.configure(text="Выберите папку", command=self.select_folder)
+        folder_select_but = Button(self.root)
+        folder_select_but.configure(
+            text="Выберите папку", command=self.select_folder)
+        start_creation_but = Button(self.root)
+        start_creation_but.configure(
+            text="Запуск", command=self.start_creation)
+
         self.place_entry = StringVar(value="Text")
         self.place_entry.set("Путь до папки")
         self.entry = Entry(self.root, width=30, textvariable=self.place_entry)
         self.label.grid(row=0, column=0, columnspan=2,
                         padx=20, pady=20, sticky="NSEW")
         self.entry.grid(row=1, column=0, padx=20, pady=20)
-        button.grid(row=1, column=1, padx=20, pady=20)
+        folder_select_but.grid(row=1, column=1, padx=20, pady=20)
+        start_creation_but.grid(row=2, column=1, padx=20, pady=20)
 
     def select_folder(self):
         folder = fd.askdirectory()
         self.place_entry.set(folder)
         return folder
+
+    def start_creation(self):
+        current_folder = self.place_entry.get()
+        real_folder = os.chdir(current_folder)
+        file = os.path.abspath(os.listdir(real_folder)[0])
+        print(file)
+        if file.endswith('.xlsx'):
+            excel_file = pd.ExcelFile(file)
+            sheets = excel_file.sheet_names
+            print(sheets)
+        return real_folder
 
     def run(self):
         self.root.mainloop()
