@@ -1,7 +1,7 @@
 from windows import MainWindow
 
 
-window = MainWindow(700, 300, "Создание справки и сводной таблицы",
+window = MainWindow(650, 300, "Создание справки и сводной таблицы",
                     icon=None)
 window.label.configure(
     text="@Автор программы - Раиль Гумеров.\nПриветствую вас в моем первом .exe-шном приложении!",
