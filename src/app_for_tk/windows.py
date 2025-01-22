@@ -10,12 +10,11 @@ import os
 
 FONT_MAIN_WINDOW = ("Times New Roman", 18)
 HEADER_ROW = 1  # номер строки заголовков для парсинга колонок
-# столбец, по которому группируются данные
-INDEX = ['Наименование детали']
+INDEX = 'Наименование детали'  # столбец индекса
 SHEET_VALUES = ['Годных шт.', 'Стоимость вул-ции']  # столбцы для агрегирования
 AGG_FUNC = 'sum'  # агрегирующая функция
-SUMMARY_SHEET_NAME = 'Сводная'
-REFERENCE_SHEET_NAME = 'Справка'
+SUMMARY_SHEET_NAME = 'Сводная'  # название листа сводной таблицы
+REFERENCE_SHEET_NAME = 'Справка'  # название листа справки
 
 
 # Виджет выбора листа для парсинга
@@ -79,17 +78,6 @@ class SelectColumnWindow(tk.Toplevel):
         return col  # возвращаем столбцы, которые нужны для парсинга
 
 
-# Виджет прогрессбара
-# class ProgressBar(tk.Toplevel):
-#     def __init__(self, parent):
-#         super().__init__(parent)
-#         self.title("Создание таблицы")
-#         self.geometry("300x50+200+200")
-#         self.progressbar = ttk.Progressbar(
-#             orient="horizontal", mode="indeterminate")
-#         self.progressbar.grid(row=0, column=0, sticky="nsew")
-
-
 # Виджет главного окна
 class MainWindow(tk.Tk):
     def __init__(self, width, height, title="MyWindow", resizable=(False, False), icon=None):
@@ -113,8 +101,6 @@ class MainWindow(tk.Tk):
         )
         folder_select_btn = tk.Button(
             self, text="Выберите папку", command=self.select_folder)
-        # select_sheet_btn = tk.Button(
-        #     self, text="Выбор таблицы и столбцов", command=self.select_sheet)
         start_conv = tk.Button(self, text="Создание сводной таблицы и справки",
                                command=self.start_conversion)
         close_btn = tk.Button(self, text="Выход",
@@ -127,19 +113,16 @@ class MainWindow(tk.Tk):
                         padx=20, pady=20, sticky="NSEW")
         self.entry.grid(row=1, column=0, padx=10, pady=10)
         folder_select_btn.grid(row=1, column=1, padx=10, pady=10, sticky="e")
-        # select_sheet_btn.grid(row=2, column=0, padx=10, pady=10)
         start_conv.grid(row=2, column=1, padx=10, pady=10, sticky="e")
         close_btn.grid(row=3, column=1, padx=10, pady=10, sticky="e")
 
-    # Функция выбора папки с файлами(в будущем попробовать askopenfilenames!!)
-
+# Функция выбора папки с файлами(в будущем попробовать askopenfilenames!!)
     def select_folder(self):
         folder = fd.askdirectory()
         self.place_entry.set(folder)
         return folder
 
-    # Функция сохранения файла
-
+# Функция сохранения файла
     def save_file(self, summary, summary_sheet_name, reference, reference_sheet_name):
         file_path = fd.asksaveasfilename(defaultextension='.xlsx')
         if file_path != "":
@@ -162,20 +145,21 @@ class MainWindow(tk.Tk):
         columns = SelectColumnWindow(500, 650, self, excel_file, sheet)
         user_cols = columns.select_col()
 
+        # Определение параметров сводной таблицы
         # объединение по выбранному листу из нескольких книг
         df_total = self.summary_sheet(
             current_folder, sheet, user_cols, HEADER_ROW)
-        # print(df_total)
+        # суммирование значений по наименованию
         reference_list = self.reference_sheet(
             df_total, INDEX, SHEET_VALUES, AGG_FUNC)
+
         # print(reference_list)
         self.save_file(df_total, SUMMARY_SHEET_NAME,
                        reference_list, REFERENCE_SHEET_NAME)
-        # self.save_file(reference_list, "справка")
         self.destroy()
-    # Функция создания сводной таблицы из нескольких файлов Excel
-    # с одинаковой шапкой
 
+# Функция создания сводной таблицы из нескольких файлов Excel
+# с одинаковой шапкой
     def summary_sheet(self, folder_path, nessesary_sheet, use_cols, header_row):
         concat_list = []
         files = os.listdir(folder_path)
@@ -204,13 +188,9 @@ class MainWindow(tk.Tk):
         pt = pd.pivot_table(df,
                             values=values,
                             index=index,
-                            # columns=index,
                             aggfunc=aggfunc,
-                            margins=True,
-                            margins_name="Итого",
-                            observed=True
                             )
-        # pt = pt[pt[zero_values_column] != 0]  # фильтруем нулевые значения
+        pt = pt[pt['Годных шт.'] != 0]
         return pt
 
     def run(self):
