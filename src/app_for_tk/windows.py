@@ -129,7 +129,24 @@ class MainWindow(tk.Tk):
             with pd.ExcelWriter(file_path, date_format="DD.MM.YY", datetime_format="DD.MM.YY", engine="xlsxwriter") as writer:
                 summary.to_excel(
                     writer, sheet_name=summary_sheet_name, index=False)
-                reference.to_excel(writer, sheet_name=reference_sheet_name)
+                reference.to_excel(
+                    writer, sheet_name=reference_sheet_name, startrow=1)
+                summary_sheet = writer.sheets[summary_sheet_name]
+                summary_sheet.autofilter(0, 0, 0, len(summary.columns) - 1)
+                summary_sheet.set_column(1, len(summary.columns) - 1, 20)
+
+                reference_sheet = writer.sheets[reference_sheet_name]
+                cell_format = writer.book.add_format(
+                    {
+                        "border": 1,
+                        "border_color": "black",
+                        "align": "center",
+                    }
+                )
+                reference_sheet.set_column('A1:C20', 20, cell_format)
+
+                reference_sheet.write(
+                    0, 0, "Справка")
 
     def start_conversion(self):
         # Получение названия папки с файлами Excel(проверить, есть ли файлы, одинаковые ли они...)
@@ -191,6 +208,7 @@ class MainWindow(tk.Tk):
                             aggfunc=aggfunc,
                             )
         pt = pt[pt['Годных шт.'] != 0]
+
         return pt
 
     def run(self):
