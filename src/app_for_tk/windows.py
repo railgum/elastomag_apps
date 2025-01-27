@@ -1,20 +1,18 @@
 import tkinter as tk
 from tkinter import filedialog as fd
-# from tkinter import ttk
-# import threading
 import pandas as pd
 import os
-# from time import sleep
-# from fileinput import filename
 
 
-FONT_MAIN_WINDOW = ("Times New Roman", 18)
+FONT_MAIN_WINDOW = ("Times New Roman", 14)
 HEADER_ROW = 1  # номер строки заголовков для парсинга колонок
 INDEX = 'Наименование детали'  # столбец индекса
 SHEET_VALUES = ['Годных шт.', 'Стоимость вул-ции']  # столбцы для агрегирования
 AGG_FUNC = 'sum'  # агрегирующая функция
 SUMMARY_SHEET_NAME = 'Сводная'  # название листа сводной таблицы
 REFERENCE_SHEET_NAME = 'Справка'  # название листа справки
+MSG_FILES = "Файлы выбраны"
+SHEET_SOURCE = "Наряд"
 
 
 # Виджет выбора листа для парсинга
@@ -53,7 +51,8 @@ class SelectColumnWindow(tk.Toplevel):
         self.geometry(f"{width}x{height}+200+50")
         self.resizable(False, False)
         self.title("Выбор колонок таблицы")
-        label = tk.Label(self, text="Выберите необходимые колонки таблицы")
+        label = tk.Label(self, text="Выберите необходимые колонки таблицы", font=(
+            "Times New Roman", 14))
         self.df = file.parse(sheet, header=HEADER_ROW)
         self.list_cb = []
         for i in range(len(self.df.columns)):
@@ -83,6 +82,7 @@ class MainWindow(tk.Tk):
     def __init__(self, width, height, title="MyWindow", resizable=(False, False), icon=None):
         super().__init__()
         self.label = None
+        self.text = None
         self.entry = None
         self.place_entry = None
         self.title(title)
@@ -93,36 +93,51 @@ class MainWindow(tk.Tk):
 
         self.draw_widgets()
 
+# Функция отрисовки виджетов
     def draw_widgets(self):
         self.label = tk.Label(
             self,
             text="Label",
             font=FONT_MAIN_WINDOW
         )
+        self.text = tk.Text(self, width=77, height=3, wrap="word")
         folder_select_btn = tk.Button(
             self, text="Выберите папку", command=self.select_folder)
-        start_conv = tk.Button(self, text="Создание сводной таблицы и справки",
+        files_select_btn = tk.Button(
+            self, text="Выберите файлы", command=self.select_files)
+        start_conv = tk.Button(self, text="Создать",
                                command=self.start_conversion)
         close_btn = tk.Button(self, text="Выход",
                               command=self.destroy)
         self.place_entry = tk.StringVar(value="Text")
         self.place_entry.set("Путь до папки")
-        self.entry = tk.Entry(self, width=30,
+        self.entry = tk.Entry(self, width=10,
                               textvariable=self.place_entry)
-        self.label.grid(row=0, column=0, columnspan=2,
-                        padx=20, pady=20, sticky="NSEW")
-        self.entry.grid(row=1, column=0, padx=10, pady=10)
-        folder_select_btn.grid(row=1, column=1, padx=10, pady=10, sticky="e")
-        start_conv.grid(row=2, column=1, padx=10, pady=10, sticky="e")
-        close_btn.grid(row=3, column=1, padx=10, pady=10, sticky="e")
+        self.label.grid(row=0, column=0, columnspan=3,
+                        padx=10, pady=20, sticky="NSEW")
+        self.text.grid(row=1, column=0, columnspan=3,
+                       padx=10, pady=20, sticky="NSEW")
+        self.entry.grid(row=2, column=0, padx=10, pady=10)
+        folder_select_btn.grid(row=2, column=1, padx=5, pady=10)
+        files_select_btn.grid(row=2, column=2, padx=5, pady=10, sticky="e")
+        start_conv.grid(row=3, column=2, padx=5, pady=10, sticky="e")
+        close_btn.grid(row=4, column=2, padx=5, pady=10, sticky="e")
 
 # Функция выбора папки с файлами(в будущем попробовать askopenfilenames!!)
     def select_folder(self):
         folder = fd.askdirectory()
         self.place_entry.set(folder)
+        self.entry.configure(fg="black")
         return folder
 
-# Функция сохранения файла
+    def select_files(self):
+        files = fd.askopenfilenames()
+        self.place_entry.set(files[0])
+        self.entry.configure(fg="black")
+        return files
+
+        # Функция сохранения файла
+
     def save_file(self, summary, summary_sheet_name, reference, reference_sheet_name):
         file_path = fd.asksaveasfilename(defaultextension='.xlsx')
         if file_path != "":
@@ -150,27 +165,37 @@ class MainWindow(tk.Tk):
 
     def start_conversion(self):
         # Получение названия папки с файлами Excel(проверить, есть ли файлы, одинаковые ли они...)
-        current_folder = self.place_entry.get()
         # Получение пути до папки
-        real_folder = os.chdir(current_folder)
-        file = os.path.abspath(os.listdir(real_folder)[0])
-        # Выбор листа и нужных колонок
+        current_folder = self.place_entry.get()
+        file = ''
+        if current_folder.endswith(('.xlsx', '.xls', '.xlsm')):
+            real_folder = os.chdir(os.path.dirname(
+                current_folder))  # абс. путь до папки
+            file = os.path.abspath(os.listdir(real_folder)[0])  # первый файл
+        else:
+            real_folder = os.chdir(current_folder)
+            file = os.path.abspath(os.listdir(real_folder)[0])
+
+        # Открытие первого файла
         excel_file = pd.ExcelFile(file)
-        sheets = excel_file.sheet_names
-        radio_win = SelectSheetWindow(300, 400, self, sheets)
-        sheet = radio_win.select_sheet()
-        columns = SelectColumnWindow(500, 650, self, excel_file, sheet)
+
+        # Выбор листа
+        # sheets = excel_file.sheet_names
+        # radio_win = SelectSheetWindow(300, 400, self, sheets)
+        # sheet = radio_win.select_sheet()
+
+        # Выбор колонок
+        columns = SelectColumnWindow(500, 650, self, excel_file, SHEET_SOURCE)
         user_cols = columns.select_col()
 
         # Определение параметров сводной таблицы
         # объединение по выбранному листу из нескольких книг
         df_total = self.summary_sheet(
-            current_folder, sheet, user_cols, HEADER_ROW)
+            real_folder, SHEET_SOURCE, user_cols, HEADER_ROW)
         # суммирование значений по наименованию
         reference_list = self.reference_sheet(
             df_total, INDEX, SHEET_VALUES, AGG_FUNC)
 
-        # print(reference_list)
         self.save_file(df_total, SUMMARY_SHEET_NAME,
                        reference_list, REFERENCE_SHEET_NAME)
         self.destroy()
@@ -200,15 +225,15 @@ class MainWindow(tk.Tk):
         # df_total.reset_index(drop=True, inplace=True)
         return df_total
 
-# функция суммирования значений
+# Функция суммирования значений
     def reference_sheet(self, df, index, values, aggfunc):
         pt = pd.pivot_table(df,
                             values=values,
                             index=index,
                             aggfunc=aggfunc,
                             )
+        # Удаление нулевых значений
         pt = pt[pt['Годных шт.'] != 0]
-
         return pt
 
     def run(self):
